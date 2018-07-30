@@ -2,12 +2,13 @@ import operator
 from uuid import uuid4
 from math import ceil
 from collections import OrderedDict
+from functools import reduce
 
 import numpy as np
 import pandas as pd
 import pygdf as gd
 from libgdf_cffi import libgdf
-from toolz import merge, partition_all
+from toolz import merge, partition_all, merge_with
 
 import dask.dataframe as dd
 from dask.base import tokenize, normalize_token, DaskMethodsMixin
@@ -383,6 +384,92 @@ class DataFrame(_Frame):
         from .groupby import Groupby
 
         return Groupby(df=self, by=by)
+
+    def merge(self, other, on=None, how='left', lsuffix='_x', rsuffix='_y'):
+        assert how == 'left', 'left join is impelemented'
+        if on is None or len(on) == 1:
+            return self.join(other, how=how, lsuffix=lsuffix, rsuffix=rsuffix)
+        else:
+            return self._merge(other, on=on, how=how, lsuffix=lsuffix,
+                               rsuffix=rsuffix)
+
+    def _merge(self, other, on, how, lsuffix, rsuffix):
+        left_val_names = [k for k in self.columns if k not in on]
+        right_val_names = [k for k in other.columns if k not in on]
+        same_names = set(left_val_names) & set(right_val_names)
+        if same_names and not (lsuffix or rsuffix):
+            raise ValueError('there are overlapping columns but '
+                             'lsuffix and rsuffix are not defined')
+
+        assert how == 'left'
+
+        def build_hashtable(frame):
+            mod = 1300511
+            subset = frame.loc[:, on].to_pandas()
+            multihash = subset.values
+            multihash = multihash * (1 + np.arange(multihash.ndim))
+            hashed = pd.util.hash_array(multihash.sum(axis=1))
+            hashtable = pd.util.hash_array(hashed % mod)
+            return hashtable
+
+        def build_whohas_map(frame, partid):
+            ht = build_hashtable(frame)
+            whohas_map = {v: set([partid]) for v in ht}
+            return whohas_map
+
+        def combine_whohas_map(a, b):
+            return merge_with(lambda vs: reduce(operator.or_, vs), a, b)
+
+        def build_depends(frame, whohas):
+            ht = build_hashtable(frame)
+            common = frozenset(ht) & frozenset(whohas.keys())
+            return ht, {v for k in common for v in whohas[k]}
+
+        def concat(ht, *frames):
+            return gd.concat(frames)
+
+        def get_empty_frame(df):
+            return df[:0]
+
+        def merge(left, right):
+            return left.merge(right, how=how, on=on)
+
+        def tree_reduce(fn, seq):
+            def chunking(seq):
+                for a, b in zip(seq[::2], seq[1::2]):
+                    yield a, b
+                if len(seq) % 2 != 0:
+                    yield (seq[-1],)
+
+            while len(seq) > 1:
+                seq = [reduce(fn, pair)
+                       for pair in chunking(seq)]
+            return seq[0]
+
+        # Determine which right partitions has what
+        whohas = [delayed(build_whohas_map)(p, i)
+                  for i, p in enumerate(other.to_delayed())]
+        whohas = tree_reduce(delayed(combine_whohas_map), whohas)
+        hts_depends = [delayed(build_depends)(p, whohas=whohas)
+                       for p in self.to_delayed()]
+
+        hts = list(map(operator.itemgetter(0), hts_depends))
+        depends = list(map(operator.itemgetter(1), hts_depends))
+
+        def do_reparts(ht, dep):
+            if not dep:
+                return delayed(get_empty_frame)(other.to_delayed()[0])
+            else:
+                return delayed(concat)(ht, *[other.to_delayed()[i] for i in dep])
+
+        reparts = [do_reparts(ht, dep)
+                   for ht, dep in zip(hts, compute(*depends))]
+
+        res = [delayed(merge)(x, y)
+               for x, y in zip(self.to_delayed(), reparts)]
+
+        return from_delayed(res, prefix='join_result')
+
 
     def join(self, other, how='left', lsuffix='', rsuffix=''):
         """Join two datatframes
