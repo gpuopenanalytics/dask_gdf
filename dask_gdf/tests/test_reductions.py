@@ -41,4 +41,4 @@ def test_series_reduce(reducer):
 
     got = reducer(gdf.x)
     exp = reducer(df.x)
-    np.testing.assert_array_almost_equal(got.compute(), exp)
+    np.testing.assert_array_almost_equal(got.compute(scheduler='single-threaded'), exp)
