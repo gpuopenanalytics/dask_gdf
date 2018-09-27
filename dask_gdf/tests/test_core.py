@@ -7,6 +7,7 @@ import pytest
 import pygdf as gd
 import dask_gdf as dgd
 import dask.dataframe as dd
+from dask.dataframe.utils import assert_eq
 
 
 def test_from_pygdf():
@@ -257,3 +258,17 @@ def test_assign():
     got = out.compute().to_pandas()
     assert_frame_equal(got.loc[:, ['x', 'y']], df)
     np.testing.assert_array_equal(got['z'], pdcol)
+
+
+@pytest.mark.xfail(reason="pygdf lacks is_monotonic and fancy indexing")
+def test_repartition():
+    df = pd.DataFrame({'x': np.random.randint(0, 5, size=10000),
+                       'y': np.random.normal(size=10000)})
+
+    gdf = gd.DataFrame.from_pandas(df)
+
+    ddf = dd.from_pandas(df, npartitions=10)
+    gdf = dgd.from_pygdf(gdf, npartitions=10)
+
+    assert_eq(ddf, gdf)
+    assert_eq(ddf.repartition(npartitions=25), gdf.repartition(npartitions=25))
