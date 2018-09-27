@@ -962,3 +962,9 @@ def make_meta_dataframe(x):
 @dd.core.make_meta.register(gd.index.Index)
 def make_meta_index(x):
     return x[:0]
+
+
+@dd.methods.concat.register((gd.DataFrame, gd.Series, gd.Index))
+def concat_pygdf(*dfs, ignore_index=False, **kwargs):
+    # TODO: silently ignoring other kwargs
+    return gd.concat(dfs, ignore_index=ignore_index)
