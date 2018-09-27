@@ -5,6 +5,8 @@ import pytest
 import pygdf as gd
 import dask_gdf as dgd
 
+from dask.dataframe.utils import assert_eq
+
 
 def _make_random_frame(nelem, npartitions=2):
     df = pd.DataFrame({'x': np.random.randint(0, 5, size=nelem),
@@ -41,4 +43,5 @@ def test_series_reduce(reducer):
 
     got = reducer(gdf.x)
     exp = reducer(df.x)
-    np.testing.assert_array_almost_equal(got.compute(scheduler='single-threaded'), exp)
+
+    assert_eq(got, exp)

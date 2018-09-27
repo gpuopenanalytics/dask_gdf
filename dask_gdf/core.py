@@ -1,4 +1,3 @@
-import operator
 from uuid import uuid4
 from math import ceil
 from collections import OrderedDict
@@ -10,7 +9,7 @@ from libgdf_cffi import libgdf
 from toolz import merge, partition_all
 
 import dask.dataframe as dd
-from dask.base import tokenize, normalize_token, DaskMethodsMixin
+from dask.base import tokenize, normalize_token
 from dask.context import _globals
 from dask.core import flatten
 from dask.compatibility import apply
@@ -19,10 +18,11 @@ from dask.threaded import get as threaded_get
 from dask.utils import funcname, M, OperatorMethodMixin
 from dask.dataframe.utils import raise_on_meta_error
 from dask.dataframe.core import Scalar
+from dask.dataframe import from_delayed
 from dask.delayed import delayed
 from dask import compute
 
-from .utils import make_meta, check_meta
+from .utils import make_meta
 from . import batcher_sortnet
 from .accessor import DatetimeAccessor
 
@@ -756,9 +756,6 @@ def _from_pandas(df):
     return gd.DataFrame.from_pandas(df)
 
 
-from dask.dataframe import from_delayed
-
-
 def from_dask_dataframe(df):
     """Create a `dask_gdf.DataFrame` from a `dask.dataframe.DataFrame`
 
@@ -939,6 +936,7 @@ dd.core.parallel_types.extend([
     (gd.index.Index, Index),
 ])
 
+
 @dd.core.meta_nonempty.register(gd.Series)
 def meta_nonempty_series(x):
     s = dd.core.meta_nonempty(x.to_pandas())
@@ -949,7 +947,7 @@ def meta_nonempty_series(x):
 
 
 @dd.core.meta_nonempty.register(gd.DataFrame)
-def meta_nonempty_series(x):
+def meta_nonempty_dataframe(x):
     df = dd.core.meta_nonempty(x.to_pandas())
     return gd.DataFrame.from_pandas(df)
 
