@@ -930,11 +930,19 @@ def reduction(args, chunk=None, aggregate=None, combine=None,
     return dd.core.new_dd_object(dsk, b, meta, (None, None))
 
 
-dd.core.parallel_types.extend([
-    (gd.Series, Series),
-    (gd.DataFrame, DataFrame),
-    (gd.index.Index, Index),
-])
+@dd.core.get_parallel_type.register(gd.DataFrame)
+def _(_):
+    return DataFrame
+
+
+@dd.core.get_parallel_type.register(gd.Series)
+def _(_):
+    return Series
+
+
+@dd.core.get_parallel_type.register(gd.Index)
+def _(_):
+    return Index
 
 
 @dd.core.meta_nonempty.register(gd.Series)
@@ -962,7 +970,7 @@ def make_meta_index(x):
     return x[:0]
 
 
-@dd.methods.concat.register((gd.DataFrame, gd.Series, gd.Index))
-def concat_pygdf(*dfs, ignore_index=False, **kwargs):
+@dd.methods.concat_dispatch.register((gd.DataFrame, gd.Series, gd.Index))
+def concat_pygdf(dfs, ignore_index=False, **kwargs):
     # TODO: silently ignoring other kwargs
     return gd.concat(dfs, ignore_index=ignore_index)
