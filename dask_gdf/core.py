@@ -931,17 +931,17 @@ def reduction(args, chunk=None, aggregate=None, combine=None,
 
 
 @dd.core.get_parallel_type.register(gd.DataFrame)
-def _(_):
+def get_parallel_type_dataframe(_):
     return DataFrame
 
 
 @dd.core.get_parallel_type.register(gd.Series)
-def _(_):
+def get_parallel_type_series(_):
     return Series
 
 
 @dd.core.get_parallel_type.register(gd.Index)
-def _(_):
+def get_parallel_type_index(_):
     return Index
 
 
