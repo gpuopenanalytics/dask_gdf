@@ -84,6 +84,7 @@ def test_categorical_accessor_initialization(data):
     dsr.cat
 
 
+@pytest.mark.xfail(reason="")
 @pytest.mark.parametrize('data', [data_cat_1()])
 def test_categorical_basic(data):
     cat = data.copy()
@@ -115,6 +116,7 @@ def test_categorical_basic(data):
     assert all(x == y for x, y in zip(string.split(), expect_str.split()))
 
 
+@pytest.mark.xfail(reason="")
 @pytest.mark.parametrize('data', [data_cat_1()])
 def test_categorical_compare_unordered(data):
     cat = data.copy()
