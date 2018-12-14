@@ -95,7 +95,7 @@ def test_categorical_basic(data):
     assert dsr.dtype == pdsr.dtype
 
     # Test attributes
-    assert pdsr.cat.ordered == dsr.cat.ordered.compute()
+    assert pdsr.cat.ordered == dsr.cat.ordered
     # TODO: Investigate dsr.cat.categories: It raises
     # ValueError: Expected iterable of tuples of (name, dtype),
     # got ('a', 'b', 'c')
@@ -133,7 +133,7 @@ def test_categorical_compare_unordered(data):
     assert not np.any(out.compute())
     assert not np.any(pdsr != pdsr)
 
-    assert not dsr.cat.ordered.compute()
+    assert not dsr.cat.ordered
     assert not pdsr.cat.ordered
 
     with pytest.raises((TypeError, ValueError)) as raises:
