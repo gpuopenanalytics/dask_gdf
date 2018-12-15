@@ -43,8 +43,8 @@ def make_meta(x):
             return gd.Series(meta2)
         else:
             if isinstance(meta2, pd.RangeIndex):
-                return gd.index.RangeIndex(meta2.start, meta2.stop)
-            return gd.index.GenericIndex(meta2)
+                return gd.dataframe.index.RangeIndex(meta2.start, meta2.stop)
+            return gd.dataframe.index.GenericIndex(meta2)
 
     return meta
 
@@ -65,7 +65,7 @@ def check_meta(x, meta, funcname=None):
         more helpful to users.
     """
 
-    if not isinstance(meta, (gd.Series, gd.index.Index, gd.DataFrame)):
+    if not isinstance(meta, (gd.Series, gd.dataframe.index.Index, gd.DataFrame)):
         raise TypeError("Expected partition to be DataFrame, Series, or "
                         "Index of cudf, got `%s`" % type(meta).__name__)
 
