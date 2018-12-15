@@ -29,7 +29,7 @@ def make_meta(x):
     """
     if hasattr(x, '_meta'):
         return x._meta
-    if isinstance(x, (gd.Series, gd.DataFrame, gd.index.Index)):
+    if isinstance(x, (gd.Series, gd.DataFrame, gd.dataframe.index.Index)):
         out = x[:2]
         return out.copy() if hasattr(out, 'copy') else out
 
