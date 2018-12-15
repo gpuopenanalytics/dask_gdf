@@ -206,7 +206,7 @@ def _daskify(obj, npartitions=None, chunksize=None):
         return obj
     elif isinstance(obj, (pd.DataFrame, pd.Series, pd.Index)):
         return _daskify(dd.from_pandas(obj, npartitions=npartitions))
-    elif isinstance(obj, (gd.DataFrame, gd.Series, gd.index.Index)):
+    elif isinstance(obj, (gd.DataFrame, gd.Series, gd.dataframe.index.Index)):
         return from_cudf(obj, npartitions=npartitions)
     elif isinstance(obj, (dd.DataFrame, dd.Series, dd.Index)):
         return from_dask_dataframe(obj)
@@ -704,7 +704,7 @@ class DataFrame(_Frame):
             @delayed
             def fix_index(df, startpos):
                 stoppos = startpos + len(df)
-                return df.set_index(gd.index.RangeIndex(start=startpos,
+                return df.set_index(gd.dataframe.index.RangeIndex(start=startpos,
                                                         stop=stoppos))
 
             outdfs = [fix_index(df, startpos)
@@ -1148,7 +1148,7 @@ def _get_return_type(meta):
         return Series
     elif isinstance(meta, gd.DataFrame):
         return DataFrame
-    elif isinstance(meta, gd.index.Index):
+    elif isinstance(meta, gd.dataframe.index.Index):
         return Index
     return Scalar
 
