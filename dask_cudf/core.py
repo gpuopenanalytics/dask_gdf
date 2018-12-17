@@ -935,10 +935,7 @@ def get_parallel_type_index(_):
 @dd.core.meta_nonempty.register(cudf.Series)
 def meta_nonempty_series(x):
     s = dd.core.meta_nonempty(x.to_pandas())
-    # TODO: return cudf.Series.from_pandas(s)
-    df = s.to_frame()
-    df.columns = ['x']
-    return cudf.DataFrame.from_pandas(df)['x']
+    return cudf.Series.from_pandas(s)
 
 
 @dd.core.meta_nonempty.register(cudf.DataFrame)
