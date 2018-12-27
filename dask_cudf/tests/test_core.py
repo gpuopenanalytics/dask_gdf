@@ -2,10 +2,12 @@ import dask
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import pandas.util.testing as tm
 import pytest
 from pandas.util.testing import assert_frame_equal
 
 import cudf
+import dask_cudf
 import dask_cudf as dgd
 
 
@@ -296,3 +298,22 @@ def test_setitem_scalar_datetime():
 
     got = dgf.compute().to_pandas()
     np.testing.assert_array_equal(got["z"], df["z"])
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        # tm.makeDataFrame,
+        tm.makeMixedDataFrame,
+        # tm.makeObjectSeries,
+        # tm.makeTimeSeries,
+    ],
+)
+def test_repr(func):
+    pdf = func()
+    gdf = cudf.DataFrame.from_pandas(pdf)
+    # gddf = dd.from_pandas(gdf, npartitions=3, sort=False)  # TODO
+    gddf = dask_cudf.from_cudf(gdf, npartitions=3, sort=False)
+
+    assert repr(gddf)
+    assert gddf._repr_html_()
