@@ -303,17 +303,22 @@ def test_setitem_scalar_datetime():
 @pytest.mark.parametrize(
     "func",
     [
-        # tm.makeDataFrame,
+        lambda: tm.makeDataFrame().reset_index(),
+        # tm.makeDataFrame(),
         tm.makeMixedDataFrame,
-        # tm.makeObjectSeries,
-        # tm.makeTimeSeries,
+        tm.makeObjectSeries,
+        tm.makeTimeSeries,
     ],
 )
 def test_repr(func):
     pdf = func()
-    gdf = cudf.DataFrame.from_pandas(pdf)
+    if isinstance(pdf, pd.DataFrame):
+        gdf = cudf.DataFrame.from_pandas(pdf)
+    else:
+        gdf = cudf.Series.from_pandas(pdf)
     # gddf = dd.from_pandas(gdf, npartitions=3, sort=False)  # TODO
     gddf = dask_cudf.from_cudf(gdf, npartitions=3, sort=False)
 
     assert repr(gddf)
-    assert gddf._repr_html_()
+    if hasattr(pdf, "_repr_html_"):
+        assert gddf._repr_html_()
