@@ -2,7 +2,9 @@ from os.path import exists
 from setuptools import setup
 import versioneer
 
-packages = ["dask_cudf", "dask_cudf.io", "dask_cudf.tests"]
+packages = ["dask_cudf", "dask_cudf.io"]
+
+packages = packages + [p + ".tests" for p in packages]
 
 setup(
     name="dask_cudf",
