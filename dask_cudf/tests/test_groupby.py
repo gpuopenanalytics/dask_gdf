@@ -29,14 +29,10 @@ def test_groupby(func):
 
     ddf = dask_cudf.from_cudf(gdf, npartitions=5)
 
-    a = func(gdf).to_pandas().reset_index().sort_values("x").reset_index(drop=True)
-    b = (
-        func(ddf)
-        .compute()
-        .to_pandas()
-        .reset_index()
-        .sort_values("x")
-        .reset_index(drop=True)
-    )
+    a = func(gdf).to_pandas()
+    b = func(ddf).compute().to_pandas()
+
+    a.index.name = None
+    b.index.name = None
 
     dd.assert_eq(a, b)
