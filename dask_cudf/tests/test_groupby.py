@@ -15,9 +15,7 @@ import pytest
         lambda df: df.groupby("x").count(),
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
-        lambda df: df.groupby("x").std(),
         lambda df: df.groupby("x").y.sum(),
-        lambda df: df.groupby("x").y.std(),
     ],
 )
 def test_groupby(func):
@@ -33,6 +31,7 @@ def test_groupby(func):
     b = func(ddf).compute().to_pandas()
 
     a.index.name = None
+    a.name = None
     b.index.name = None
 
     dd.assert_eq(a, b)
