@@ -35,3 +35,25 @@ def test_groupby(func):
     b.index.name = None
 
     dd.assert_eq(a, b)
+
+
+@pytest.mark.parametrize(
+    "func", [lambda df: df.groupby("x").std(), lambda df: df.groupby("x").y.std()]
+)
+def test_groupby_std(func):
+    pdf = pd.DataFrame(
+        {"x": np.random.randint(0, 5, size=10000), "y": np.random.normal(size=10000)}
+    )
+
+    gdf = cudf.DataFrame.from_pandas(pdf)
+
+    ddf = dask_cudf.from_cudf(gdf, npartitions=5)
+
+    a = func(gdf.to_pandas())
+    b = func(ddf).compute().to_pandas()
+
+    a.index.name = None
+    a.name = None
+    b.index.name = None
+
+    dd.assert_eq(a, b)
