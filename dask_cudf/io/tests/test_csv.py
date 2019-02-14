@@ -20,5 +20,6 @@ def test_read_csv_w_bytes(tmp_path):
     df.to_csv(tmp_path / "data-*.csv", index=False)
 
     df2 = dask_cudf.read_csv(tmp_path / "*.csv", chunksize="1 kiB")
+    assert df2.npartitions > df.npartitions
 
     dd.assert_eq(df, df2)
