@@ -9,7 +9,8 @@ from dask.utils import parse_bytes
 
 
 def read_csv(path, chunksize="128 MiB", **kwargs):
-    chunksize = parse_bytes(chunksize)
+    if isinstance(chunksize, str):
+        chunksize = parse_bytes(chunksize)
     filenames = sorted(glob(str(path)))  # TODO: lots of complexity
     name = "read-csv-" + tokenize(path, **kwargs)  # TODO: get last modified time
 
@@ -29,13 +30,9 @@ def read_csv(path, chunksize="128 MiB", **kwargs):
             kwargs2["dtype"] = meta.dtypes.values
             if start != 0:
                 kwargs2["names"] = meta.columns  # no header in the middle of the file
+                kwargs2["header"] = None
             dsk[(name, i)] = (apply, cudf.read_csv, [fn], kwargs2)
             i += 1
-
-    dsk = {
-        (name, i): (apply, cudf.read_csv, [fn], kwargs)
-        for i, fn in enumerate(filenames)
-    }
 
     divisions = [None] * (len(dsk) + 1)
     return dd.core.new_dd_object(dsk, name, meta, divisions)
