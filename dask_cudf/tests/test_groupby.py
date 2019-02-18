@@ -16,8 +16,12 @@ import pytest
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
         lambda df: df.groupby("x").y.sum(),
-        lambda df: df.groupby("x").y.agg(["sum", "max"]),
-        lambda df: df.groupby("x").agg({"y": "max"}),
+        pytest.param(
+            lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.xfail
+        ),
+        pytest.param(
+            lambda df: df.groupby("x").agg({"y": "max"}), marks=pytest.mark.xfail
+        ),
     ],
 )
 def test_groupby(func):
@@ -39,6 +43,7 @@ def test_groupby(func):
     dd.assert_eq(a, b)
 
 
+@pytest.mark.xfail(reason="cudf issues")
 @pytest.mark.parametrize(
     "func", [lambda df: df.groupby("x").std(), lambda df: df.groupby("x").y.std()]
 )
