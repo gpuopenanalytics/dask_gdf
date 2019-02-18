@@ -324,6 +324,7 @@ def test_repr(func):
         assert gddf._repr_html_()
 
 
+@pytest.mark.xfail(reason="datetime indexes not fully supported in cudf")
 @pytest.mark.parametrize("start", ["1d", "5d", "1w", "12h"])
 @pytest.mark.parametrize("stop", ["1d", "3d", "8h"])
 def test_repartition_timeseries(start, stop):
