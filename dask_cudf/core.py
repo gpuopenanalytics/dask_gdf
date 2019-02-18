@@ -249,10 +249,29 @@ class DataFrame(_Frame, dd.core.DataFrame):
 
         return Groupby(df=self, by=by, method=method)
 
-    def merge(self, other, on=None, how="left", lsuffix="_x", rsuffix="_y"):
+    def merge(
+        self,
+        other,
+        on=None,
+        how="left",
+        lsuffix="_x",
+        rsuffix="_y",
+        left_index=False,
+        right_index=False,
+    ):
         """Merging two dataframes on the column(s) indicated in *on*.
         """
         assert how == "left", "left join is impelemented"
+        if left_index or right_index:
+            return dd.merge(
+                self,
+                other,
+                how=how,
+                suffixes=(lsuffix, rsuffix),
+                left_index=left_index,
+                right_index=right_index,
+            )
+
         if on is None:
             return self.join(other, how=how, lsuffix=lsuffix, rsuffix=rsuffix)
         else:
