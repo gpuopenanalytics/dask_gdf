@@ -7,7 +7,6 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 import cudf
-import dask_cudf
 import dask_cudf as dgd
 
 
@@ -231,8 +230,8 @@ def test_set_index_w_series():
         res = dgf.set_index(dgf.x)  # sort by default
         got = res.compute().to_pandas()
 
-        assert set(expect.columns) == set(got.columns)
-        assert_frame_equal_by_index_group(expect, got)
+        expect.index.name = None
+        dd.assert_eq(expect, got)
 
 
 def test_assign():
@@ -302,7 +301,7 @@ def test_setitem_scalar_datetime():
     "func",
     [
         lambda: tm.makeDataFrame().reset_index(),
-        # tm.makeDataFrame(),
+        tm.makeDataFrame,
         tm.makeMixedDataFrame,
         tm.makeObjectSeries,
         tm.makeTimeSeries,
@@ -310,12 +309,12 @@ def test_setitem_scalar_datetime():
 )
 def test_repr(func):
     pdf = func()
-    if isinstance(pdf, pd.DataFrame):
-        gdf = cudf.DataFrame.from_pandas(pdf)
-    else:
-        gdf = cudf.Series.from_pandas(pdf)
+    try:
+        gdf = cudf.from_pandas(pdf)
+    except Exception:
+        raise pytest.xfail()
     # gddf = dd.from_pandas(gdf, npartitions=3, sort=False)  # TODO
-    gddf = dask_cudf.from_cudf(gdf, npartitions=3, sort=False)
+    gddf = dd.from_pandas(gdf, npartitions=3, sort=False)
 
     assert repr(gddf)
     if hasattr(pdf, "_repr_html_"):
