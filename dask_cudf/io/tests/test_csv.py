@@ -11,9 +11,12 @@ def test_read_csv(tmp_path):
     df = dask.datasets.timeseries(dtypes={"x": int, "y": int}, freq="120s").reset_index(
         drop=True
     )
-    df.to_csv(tmp_path / "data-*.csv", index=False)
+    # tmp_path is a PosixPath -- need to convert to string
+    stmp_path = str(tmp_path / "data-*.csv")
+    df.to_csv(stmp_path, index=False)
 
-    df2 = dask_cudf.read_csv(tmp_path / "*.csv")
+    stmp_path = str(tmp_path / "*.csv")
+    df2 = dask_cudf.read_csv(stmp_path)
     dd.assert_eq(df, df2)
 
 
