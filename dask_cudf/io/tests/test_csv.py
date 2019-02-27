@@ -19,6 +19,10 @@ def test_read_csv(tmp_path):
     df2 = dask_cudf.read_csv(stmp_path)
     dd.assert_eq(df, df2)
 
+    # file path test
+    df3 = dask_cudf.read_csv(f"file://{stmp_path}")
+    dd.assert_eq(df2, df3)
+
 
 def test_read_csv_w_bytes(tmp_path):
     df = dask.datasets.timeseries(dtypes={"x": int, "y": int}, freq="120s").reset_index(
