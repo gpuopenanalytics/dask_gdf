@@ -226,3 +226,21 @@ def test_indexed_join(how):
     dg = dg_left.merge(dg_right, left_index=True, right_index=True, how=how)
 
     dd.assert_eq(d, dg)
+
+
+@pytest.mark.parametrize("how", ["left", "inner"])
+def test_how(how):
+    left = cudf.DataFrame({"x": [1, 2, 3, 4, None], "y": [1.0, 2.0, 3.0, 4.0, 0.0]})
+    right = cudf.DataFrame({"x": [2, 3, None, 2], "y": [20, 30, 0, 20]})
+
+    dleft = dd.from_pandas(left, npartitions=2)
+    dright = dd.from_pandas(right, npartitions=3)
+
+    expected = left.merge(right, how=how, on="x")
+    result = dleft.merge(dright, how=how, on="x")
+
+    dd.assert_eq(
+        result.compute().to_pandas().sort_values("x"),
+        expected.to_pandas().sort_values("x"),
+        check_index=False,
+    )

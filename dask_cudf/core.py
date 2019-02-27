@@ -1,8 +1,6 @@
 # Copyright (c) 2018, NVIDIA CORPORATION.
 
 from collections import OrderedDict
-from math import ceil
-from uuid import uuid4
 
 import dask
 import dask.dataframe as dd
@@ -25,7 +23,6 @@ from toolz import partition_all
 import cudf
 from dask_cudf import batcher_sortnet, join_impl
 from dask_cudf.accessor import CachedAccessor, CategoricalAccessor, DatetimeAccessor
-from dask_cudf.utils import make_meta
 
 
 def optimize(dsk, keys, **kwargs):
@@ -74,13 +71,13 @@ class _Frame(dd.core._Frame, OperatorMethodMixin):
     def __init__(self, dsk, name, meta, divisions):
         self.dask = dsk
         self._name = name
-        meta = make_meta(meta)
+        meta = dd.core.make_meta(meta)
         if not isinstance(meta, self._partition_type):
             raise TypeError(
                 "Expected meta to specify type {0}, got type "
                 "{1}".format(self._partition_type.__name__, type(meta).__name__)
             )
-        self._meta = meta
+        self._meta = dd.core.make_meta(meta)
         self.divisions = tuple(divisions)
 
     def __getstate__(self):
@@ -206,7 +203,7 @@ class DataFrame(_Frame, dd.core.DataFrame):
             out[k] = v
             return out
 
-        meta = assigner(self._meta, k, make_meta(v))
+        meta = assigner(self._meta, k, dd.core.make_meta(v))
         return self.map_partitions(assigner, k, v, meta=meta)
 
     def apply_rows(self, func, incols, outcols, kwargs={}, cache_key=None):
@@ -256,7 +253,6 @@ class DataFrame(_Frame, dd.core.DataFrame):
     ):
         """Merging two dataframes on the column(s) indicated in *on*.
         """
-        assert how == "left", "left join is impelemented"
         if left_index or right_index:
             return dd.merge(
                 self,
@@ -266,7 +262,6 @@ class DataFrame(_Frame, dd.core.DataFrame):
                 left_index=left_index,
                 right_index=right_index,
             )
-
         if on is None:
             return self.join(other, how=how, lsuffix=lsuffix, rsuffix=rsuffix)
         else:
@@ -333,10 +328,10 @@ class DataFrame(_Frame, dd.core.DataFrame):
 
             for k, dtype in rhs_dtypes:
                 data = np.zeros(len(lhs), dtype=dtype)
-                mask_size = cudf.utils.calc_chunk_size(
-                    data.size, cudf.utils.mask_bitsize
+                mask_size = cudf.utils.utils.calc_chunk_size(
+                    data.size, cudf.utils.utils.mask_bitsize
                 )
-                mask = np.zeros(mask_size, dtype=cudf.utils.mask_dtype)
+                mask = np.zeros(mask_size, dtype=cudf.utils.utils.mask_dtype)
                 sr = cudf.Series.from_masked_array(
                     data=data, mask=mask, null_count=data.size
                 )
@@ -696,79 +691,6 @@ def splits_divisions_sorted_cudf(df, chunksize):
     return splits, divisions
 
 
-def from_cudf(data, npartitions=None, chunksize=None, sort=True, name=None):
-    """Create a dask_cudf from a cudf object
-
-    Parameters
-    ----------
-    data : cudf.DataFrame or cudf.Series
-    npartitions : int, optional
-        The number of partitions of the index to create. Note that depending on
-        the size and index of the dataframe, the output may have fewer
-        partitions than requested.
-    chunksize : int, optional
-        The number of rows per index partition to use.
-    sort : bool
-        Sort input first to obtain cleanly divided partitions or don't sort and
-        don't get cleanly divided partitions
-    name : string, optional
-        An optional keyname for the dataframe. Defaults to a uuid.
-
-    Returns
-    -------
-    dask_cudf.DataFrame or dask_cudf.Series
-        A dask_cudf DataFrame/Series partitioned along the index
-    """
-    if not isinstance(data, (cudf.Series, cudf.DataFrame)):
-        raise TypeError("Input must be a cudf DataFrame or Series")
-
-    if (npartitions is None) == (chunksize is None):
-        raise ValueError(
-            "Exactly one of npartitions and chunksize must " "be specified."
-        )
-
-    nrows = len(data)
-
-    if chunksize is None:
-        chunksize = int(ceil(nrows / npartitions))
-
-    name = name or ("from_cudf-" + uuid4().hex)
-
-    if sort:
-        data = data.sort_index(ascending=True)
-        splits, divisions = splits_divisions_sorted_cudf(data, chunksize)
-    else:
-        splits = list(range(0, nrows, chunksize)) + [len(data)]
-        divisions = (None,) * len(splits)
-
-    dsk = {
-        (name, i): data[start:stop]
-        for i, (start, stop) in enumerate(zip(splits[:-1], splits[1:]))
-    }
-
-    return dd.core.new_dd_object(dsk, name, data, divisions)
-
-
-def _from_pandas(df):
-    return cudf.DataFrame.from_pandas(df)
-
-
-def from_dask_dataframe(df):
-    """Create a `dask_cudf.DataFrame` from a `dask.dataframe.DataFrame`
-
-    Parameters
-    ----------
-    df : dask.dataframe.DataFrame
-    """
-    bad_cols = df.select_dtypes(include=["O"])
-    if len(bad_cols.columns):
-        raise ValueError("Object dtypes aren't supported by cudf")
-
-    meta = _from_pandas(df._meta)
-    dummy = DataFrame(df.dask, df._name, meta, df.divisions)
-    return dummy.map_partitions(_from_pandas, meta=meta)
-
-
 def _extract_meta(x):
     """
     Extract internal cache data (``_meta``) from dask_cudf objects
@@ -937,10 +859,17 @@ def reduction(
     if meta is None:
         meta_chunk = _emulate(apply, chunk, args, chunk_kwargs)
         meta = _emulate(apply, aggregate, [[meta_chunk]], aggregate_kwargs)
-    meta = make_meta(meta)
+    meta = dd.core.make_meta(meta)
 
     for arg in args:
         if isinstance(arg, _Frame):
             dsk.update(arg.dask)
 
     return dd.core.new_dd_object(dsk, b, meta, (None, None))
+
+
+from_cudf = dd.from_pandas
+
+
+def from_dask_dataframe(df):
+    return df.map_partitions(cudf.from_pandas)
