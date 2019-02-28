@@ -39,10 +39,11 @@ conda list
 ################################################################################
 # BUILD - Build libcudf and cuDF from source
 ################################################################################
-git clone https://github.com/rapidsai/cudf.git CUDF-SRC
+CUDF=$WORKSPACE/CUDF-SRC
+
+git clone https://github.com/rapidsai/cudf.git CUDF-SRC && cd $CUDF
 git checkout branch-0.6
 
-CUDF=$WORKSPACE/CUDF-SRC
 
 logger "Build libcudf..."
 mkdir -p $CUDF/cpp/build
