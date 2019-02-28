@@ -10,9 +10,15 @@ PATH=/conda/bin:$PATH
 
 # Activate common conda env
 source activate gdf
+
+# for click/black
+# https://click.palletsprojects.com/en/7.x/python3/
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 pip install black
 
-# Run flake8 and get results/return code
+# Run black and get results/return code
 BLACK=`black --check --diff --exclude=versioneer.py .`
 RETVAL=$?
 
