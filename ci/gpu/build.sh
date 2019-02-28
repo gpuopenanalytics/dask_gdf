@@ -69,6 +69,9 @@ logger "Build cuDF..."
 cd $CUDF/python
 python setup.py build_ext --inplace
 
+logger "Installing cuDF..."
+pip install -e .
+
 # Temporarily install feather for testing
 logger "conda install feather-format"
 conda install -c conda-forge -y feather-format
