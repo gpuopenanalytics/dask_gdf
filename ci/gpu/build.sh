@@ -39,10 +39,13 @@ conda list
 ################################################################################
 # BUILD - Build libcudf and cuDF from source
 ################################################################################
+git clone git@github.com:rapidsai/cudf.git CUDF-SRC
+
+CUDF=$WORKSPACE/CUDF-SRC
 
 logger "Build libcudf..."
-mkdir -p $WORKSPACE/cpp/build
-cd $WORKSPACE/cpp/build
+mkdir -p $CUDF/cpp/build
+cd $CUDF/cpp/build
 logger "Run cmake libcudf..."
 cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DCMAKE_CXX11_ABI=ON ..
 
@@ -60,27 +63,8 @@ make python_cffi
 make install_python
 
 logger "Build cuDF..."
-cd $WORKSPACE/python
+cd $CUDF/python
 python setup.py build_ext --inplace
-
-################################################################################
-# TEST - Run GoogleTest and py.tests for libcudf and cuDF
-################################################################################
-
-logger "Check GPU usage..."
-nvidia-smi
-
-logger "GoogleTest for libcudf..."
-cd $WORKSPACE/cpp/build
-GTEST_OUTPUT="xml:${WORKSPACE}/test-results/" make -j${PARALLEL_LEVEL} test
-
-logger "Python py.test for libcudf..."
-cd $WORKSPACE/cpp/build/python
-py.test --cache-clear --junitxml=${WORKSPACE}/junit-libgdf.xml -v
-
-# Temporarily install cupy for testing
-logger "pip install cupy"
-pip install cupy-cuda92
 
 # Temporarily install feather for testing
 logger "conda install feather-format"
@@ -90,6 +74,6 @@ conda install -c conda-forge -y feather-format
 logger "apt-get update && apt-get install -y tzdata"
 apt-get update && apt-get install -y tzdata
 
-logger "Python py.test for cuDF..."
-cd $WORKSPACE/python
-py.test --cache-clear --junitxml=${WORKSPACE}/junit-cudf.xml -v
+logger "Python py.test for dask-cudf..."
+cd $WORKSPACE
+py.test --cache-clear --junitxml=${WORKSPACE}/junit-dask-cudf.xml -v
