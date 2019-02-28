@@ -42,6 +42,7 @@ conda list
 CUDF=$WORKSPACE/CUDF-SRC
 
 git clone https://github.com/rapidsai/cudf.git CUDF-SRC && cd $CUDF
+git submodule update --init --remote --recursive
 git checkout branch-0.6
 
 
