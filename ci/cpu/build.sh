@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (c) 2018, NVIDIA CORPORATION.
 ######################################
-# cuDF CPU conda build script for CI #
+# dask-cudf CPU conda build script for CI #
 ######################################
 set -e
 
@@ -62,21 +62,12 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 # BUILD - Conda package builds (conda deps: libcudf <- libcudf_cffi <- cudf)
 ################################################################################
 
-logger "Build conda pkg for libcudf..."
-source ci/cpu/libcudf/build_libcudf.sh
-
-logger "Build conda pkg for libcudf_cffi..."
-source ci/cpu/libcudf/build_libcudf_cffi.sh
-
-logger "Build conda pkg for cudf..."
-source ci/cpu/cudf/build_cudf.sh
+logger "Build conda pkg for dask-cudf..."
+source ci/cpu/dask-cudf/build_dask_cudf.sh
 
 ################################################################################
 # UPLOAD - Conda packages
 ################################################################################
 
-logger "Upload conda pkgs for libcudf and libcudf_cffi..."
-source ci/cpu/libcudf/upload.sh
-
 logger "Upload conda pkg..."
-source ci/cpu/cudf/upload-anaconda.sh
+source ci/cpu/dask-cudf/upload-anaconda.sh
