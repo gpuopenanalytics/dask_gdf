@@ -10,6 +10,7 @@ PATH=/conda/bin:$PATH
 
 # Activate common conda env
 source activate gdf
+pip install black
 
 # Run flake8 and get results/return code
 BLACK=`black --check --diff --exclude=versioneer.py .`
