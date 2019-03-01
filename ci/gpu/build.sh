@@ -72,6 +72,10 @@ python setup.py build_ext --inplace
 logger "Installing cuDF..."
 pip install -e .
 
+logger "Installing Dask/Distibuted"
+pip install -q git+https://github.com/dask/dask.git --upgrade
+pip install -q git+https://github.com/dask/distributed.git --upgrade
+
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
 pip install -e .
