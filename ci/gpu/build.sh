@@ -75,6 +75,7 @@ pip install -e .
 logger "Installing Dask/Distibuted"
 pip install -q git+https://github.com/dask/dask.git --upgrade
 pip install -q git+https://github.com/dask/distributed.git --upgrade
+conda install partd
 
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
