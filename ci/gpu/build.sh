@@ -72,14 +72,7 @@ python setup.py build_ext --inplace
 logger "Installing cuDF..."
 pip install -e .
 
-# Temporarily install feather for testing
-logger "conda install feather-format"
-conda install -c conda-forge -y feather-format
-
-# Temporarily install tzdata otherwise pyarrow core dumps
-logger "apt-get update && apt-get install -y tzdata"
-apt-get update && apt-get install -y tzdata
-
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
-py.test --cache-clear --junitxml=${WORKSPACE}/junit-dask-cudf.xml -v
+pip install -e .
+py.test dask_cudf/ --cache-clear --junitxml=${WORKSPACE}/junit-dask-cudf.xml -v
