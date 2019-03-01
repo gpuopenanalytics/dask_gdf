@@ -21,6 +21,7 @@ def test_sort_values(nelem, nparts, by):
     expect = df.sort_values(by=by).to_pandas().reset_index(drop=True)
     pd.util.testing.assert_frame_equal(got, expect)
 
+
 @pytest.mark.xfail(reason="")
 def test_sort_values_binned():
     np.random.seed(43)
@@ -43,6 +44,7 @@ def test_sort_values_binned():
             assert not (
                 part_uniques[i] & part_uniques[j]
             ), "should have empty intersection"
+
 
 @pytest.mark.xfail(reason="")
 def test_sort_binned_meta():

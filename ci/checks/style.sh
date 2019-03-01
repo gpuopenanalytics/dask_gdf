@@ -11,24 +11,17 @@ PATH=/conda/bin:$PATH
 # Activate common conda env
 source activate gdf
 
-# for click/black
-# https://click.palletsprojects.com/en/7.x/python3/
-export LC_ALL=C.UTF-8
-export LANG=C.UTF-8
-
-pip install black
-
-# Run black and get results/return code
-BLACK=`black --check --diff --exclude=versioneer.py .`
+# Run flake8 and get results/return code
+FLAKE=`flake8 python`
 RETVAL=$?
 
 # Output results if failure otherwise show pass
-if [ "$BLACK" != "" ]; then
-  echo -e "\n\n>>>> FAILED: black style check; begin output\n\n"
-  echo -e "$BLACK"
-  echo -e "\n\n>>>> FAILED: black style check; end output\n\n"
+if [ "$FLAKE" != "" ]; then
+  echo -e "\n\n>>>> FAILED: flake8 style check; begin output\n\n"
+  echo -e "$FLAKE"
+  echo -e "\n\n>>>> FAILED: flake8 style check; end output\n\n"
 else
-  echo -e "\n\n>>>> PASSED: Black style enforcement\n\n"
+  echo -e "\n\n>>>> PASSED: flake8 style check\n\n"
 fi
 
 exit $RETVAL

@@ -2,8 +2,6 @@ import os
 from glob import glob
 from warnings import warn
 
-import pandas as pd
-
 from dask.base import tokenize
 from dask.compatibility import apply
 import dask.dataframe as dd
