@@ -148,6 +148,10 @@ def test_categorical_compare_unordered(data):
     raises.match("Unordered Categoricals can only compare equality or not")
 
 
+# https://github.com/rapidsai/cudf/blob/branch-0.6/python/cudf/_gdf.py#L158
+# https://github.com/rapidsai/cudf/blob/branch-0.6/python/cudf/dataframe/columnops.py#L246
+# casting happens in columnops
+@pytest.mark.xfail(reason="Possible bug in cudf with casting types")
 @pytest.mark.parametrize("data", [data_cat_3()])
 def test_categorical_compare_ordered(data):
     cat1 = data[0]
