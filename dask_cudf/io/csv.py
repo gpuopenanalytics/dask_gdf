@@ -15,9 +15,9 @@ from libgdf_cffi import GDFError
 
 
 def read_csv(path, chunksize="256 MiB", **kwargs):
-    if "://" in path:
+    if "://" in str(path):
         func = make_reader(cudf.read_csv, "read_csv", "CSV")
-        return func(path, **kwargs)
+        return func(path, blocksize=chunksize, **kwargs)
     else:
         return _internal_read_csv(path=path, chunksize=chunksize, **kwargs)
 
