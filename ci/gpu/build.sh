@@ -34,6 +34,10 @@ logger "Check versions..."
 python --version
 $CC --version
 $CXX --version
+
+logger "Setup new environment..."
+conda env create -f conda/envs/dev-environment.yml
+source activate dask-cudf-dev
 conda list
 
 ################################################################################
@@ -71,11 +75,6 @@ python setup.py build_ext --inplace
 
 logger "Installing cuDF..."
 pip install -e .
-
-logger "Installing Dask/Distibuted"
-pip install -q git+https://github.com/dask/dask.git --upgrade
-pip install -q git+https://github.com/dask/distributed.git --upgrade
-conda install partd
 
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
