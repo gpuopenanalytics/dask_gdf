@@ -33,6 +33,6 @@ dependencies:
   - dask
   - s3fs
   - pip:
-      - pip install -q git+https://github.com/dask/dask.git --upgrade
-      - pip install -q git+https://github.com/dask/distributed.git --upgrade
+      - git+https://github.com/dask/dask.git
+      - git+https://github.com/dask/distributed.git
 
