@@ -11,6 +11,7 @@ boto3 = pytest.importorskip('boto3')
 moto = pytest.importorskip('moto')
 httpretty = pytest.importorskip('httpretty')
 
+
 @contextmanager
 def ensure_safe_environment_variables():
     """
@@ -24,6 +25,7 @@ def ensure_safe_environment_variables():
     finally:
         os.environ.clear()
         os.environ.update(saved_environ)
+
 
 @contextmanager
 def s3_context(bucket, files):
@@ -50,17 +52,9 @@ def s3_context(bucket, files):
                     httpretty.HTTPretty.disable()
                     httpretty.HTTPretty.reset()
 
-@pytest.mark.slow
-def test_read_s3():
-    bucket = 's3://dask-data/airline-data/1987.csv'
-    bucket = 's3://noaa-ghcn-pds/csv.gz/1788.csv.gz'
-    df = dask_cudf.read_csv(bucket, storage_options={'anon': True})
-    assert len(columns) == 29
-    assert df.DepTime.sum().compute() == 1407533003
-
 
 def test_read_csv():
     with s3_context('csv', {'a.csv': b'a,b\n1,2\n3,4\n'}) as s3:
-        df = dask_cudf.read_csv('s3://csv/*.csv', chunksize="50 B", storage_options={'s3': s3})
-        breakpoint()
-        assert df.a.sum().compute() == 1 + 3
+        df = dask_cudf.read_csv('s3://csv/*.csv', chunksize="50 B",
+                                storage_options={'s3': s3})
+        assert df.a.sum().compute() == 4
