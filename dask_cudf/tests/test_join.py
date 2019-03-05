@@ -219,7 +219,7 @@ def test_indexed_join(how):
     dg_right = dd.from_pandas(g_right, npartitions=5)
 
     d = g_left.merge(g_right, left_index=True, right_index=True, how=how)
-    dg = dd.merge(dg_left, dg_right, left_index=True, right_index=True, how=how)
+    dg = dg_left.merge(dg_right, left_index=True, right_index=True, how=how)
     dd.assert_eq(d, dg)
 
 
