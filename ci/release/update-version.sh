@@ -50,12 +50,8 @@ function sed_runner() {
 # cpp update
 sed_runner 's/'"CUDA_DATAFRAME VERSION ${CURRENT_TAG}"'/'"CUDA_DATAFRAME VERSION ${NEXT_FULL_TAG}"'/g' cpp/CMakeLists.txt
 
-# libcudf
-sed_runner 's/version=.*/version=\"'"${NEXT_FULL_TAG}"'\",/g' cpp/python/setup.py
-
 # Conda recipe updates
-sed_runner 's/libcudf .*/libcudf '"${NEXT_SHORT_TAG}*"'/g' conda/recipes/cudf/meta.yaml
-sed_runner 's/libcudf_cffi .*/libcudf_cffi '"${NEXT_SHORT_TAG}*"'/g' conda/recipes/cudf/meta.yaml
+sed_runner 's/cudf .*/cudf '"${NEXT_SHORT_TAG}*"'/g' conda/recipes/meta.yaml
 
 # RTD update
 sed_runner 's/version = .*/version = '"'${NEXT_SHORT_TAG}'"'/g' docs/source/conf.py
