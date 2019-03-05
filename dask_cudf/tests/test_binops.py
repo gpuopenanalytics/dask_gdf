@@ -42,17 +42,14 @@ _binops = [
     operator.mul,
     operator.truediv,
     operator.floordiv,
-    # operator.eq,
-    # operator.ne,
-    # operator.gt,
-    # operator.ge,
-    # operator.lt,
-    # operator.le,
+    operator.eq,
+    operator.ne,
+    operator.gt,
+    operator.ge,
+    operator.lt,
+    operator.le,
 ]
 
-# https://github.com/rapidsai/cudf/blob/branch-0.6/python/cudf/_gdf.py#L158
-# https://github.com/rapidsai/cudf/blob/branch-0.6/python/cudf/dataframe/columnops.py#L246
-# casting happens in columnops
 
 @pytest.mark.parametrize("binop", _binops)
 def test_series_binops_integer(binop):

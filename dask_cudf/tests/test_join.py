@@ -15,7 +15,6 @@ param_nrows = [5, 10, 50, 100]
 @pytest.mark.parametrize("right_nrows", param_nrows)
 @pytest.mark.parametrize("left_nkeys", [4, 5])
 @pytest.mark.parametrize("right_nkeys", [4, 5])
-@pytest.mark.xfail(reason="inner joins with an index need to be evaluted again")
 def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
     chunksize = 50
 
@@ -62,6 +61,7 @@ def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
     expect.reset_index().groupby("index").apply(partial(gather, grows=expect_rows))
 
     expect.reset_index().groupby("index").apply(partial(gather, grows=got_rows))
+
     assert got_rows == expect_rows
 
 
@@ -70,7 +70,6 @@ def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
 @pytest.mark.parametrize("left_nkeys", [4, 5])
 @pytest.mark.parametrize("right_nkeys", [4, 5])
 @pytest.mark.parametrize("how", ["left", "right"])
-@pytest.mark.xfail(reason="left/right joins with an index need to be evaluted again")
 def test_join_left(left_nrows, right_nrows, left_nkeys, right_nkeys, how):
     chunksize = 50
 
