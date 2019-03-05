@@ -37,7 +37,7 @@ $CXX --version
 
 logger "Setup new environment..."
 conda env create -f conda/envs/dev-environment.yml
-source activate dask-cudf-dev
+conda activate dask-cudf-dev
 conda list
 
 ################################################################################
