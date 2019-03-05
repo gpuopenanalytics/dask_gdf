@@ -64,3 +64,32 @@ def test_groupby_std(func):
     b.index.name = None
 
     dd.assert_eq(a, b)
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        lambda df: df.groupby(["x", "y"]).z.sum(),
+        lambda df: df.groupby(["x", "y"]).sum(),
+    ],
+)
+def test_multi_column(func):
+    pdf = pd.DataFrame(
+        {
+            "x": np.random.randint(0, 5, size=1000),
+            "y": np.random.randint(0, 10, size=1000),
+            "z": np.random.normal(size=1000),
+        }
+    )
+    gdf = cudf.DataFrame.from_pandas(pdf)
+
+    ddf = dask_cudf.from_cudf(gdf, npartitions=5)
+
+    a = func(gdf).to_pandas()
+    b = func(ddf).compute().to_pandas()
+
+    a.index.name = None
+    a.name = None
+    b.index.name = None
+
+    dd.assert_eq(a, b)
