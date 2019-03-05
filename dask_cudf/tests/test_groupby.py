@@ -16,6 +16,8 @@ import pytest
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
         lambda df: df.groupby("x").y.sum(),
+        lambda df: df.groupby(df.x).y.sum(),
+        lambda df: df.groupby(df.x + 1).y.sum(),
         pytest.param(
             lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.xfail
         ),
