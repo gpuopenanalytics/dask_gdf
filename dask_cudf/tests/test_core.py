@@ -43,18 +43,6 @@ def test_from_cudf_with_generic_idx():
     assert isinstance(ddf.index.compute(), cudf.dataframe.index.GenericIndex)
     dd.assert_eq(ddf.loc[1:2, ["a"]], cdf.loc[1:2, ["a"]])
 
-def test_timeseries_index():
-
-    gdf = cudf.DataFrame()
-    gdf['date'] = pd.date_range('11/20/2018', periods=72, freq='D')
-    gdf['value'] = np.random.sample(len(gdf))
-
-    ddf = dgd.from_cudf(gdf, npartitions=2)
-
-    ddf_ts_idx = gdf.set_index('date')
-    gdf_ts_idx = gdf.set_index('date')
-    dd.assert_eq(ddf_ts_idx, gdf_ts_idx)
-
 
 def _fragmented_gdf(df, nsplit):
     n = len(df)
@@ -125,6 +113,23 @@ def test_set_index(nelem):
         got = dgdf.set_index("x")
 
         dd.assert_eq(expect, got, check_index=False, check_divisions=False)
+
+
+def test_timeseries_index():
+
+    df = pd.DataFrame()
+    df['date'] = pd.date_range('11/20/2018', periods=72, freq='D')
+    df['value'] = np.random.sample(len(df))
+
+    gdf = cudf.DataFrame.from_pandas(df)
+    ddf = dgd.from_cudf(gdf, npartitions=2)
+
+    ddf_ts_idx = ddf.set_index('date')
+
+    got = ddf_ts_idx.compute().to_pandas()
+    expect = df.set_index('date')
+
+    dd.assert_eq(got, expect, check_index=False, check_divisions=False)
 
 
 def assert_frame_equal_by_index_group(expect, got):
