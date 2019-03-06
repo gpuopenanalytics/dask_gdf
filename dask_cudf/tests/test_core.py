@@ -43,6 +43,18 @@ def test_from_cudf_with_generic_idx():
     assert isinstance(ddf.index.compute(), cudf.dataframe.index.GenericIndex)
     dd.assert_eq(ddf.loc[1:2, ["a"]], cdf.loc[1:2, ["a"]])
 
+def test_timeseries_index():
+
+    gdf = cudf.DataFrame()
+    gdf['date'] = pd.date_range('11/20/2018', periods=72, freq='D')
+    gdf['value'] = np.random.sample(len(gdf))
+
+    ddf = dgd.from_cudf(gdf, npartitions=2)
+
+    ddf_ts_idx = gdf.set_index('date')
+    gdf_ts_idx = gdf.set_index('date')
+    dd.assert_eq(ddf_ts_idx, gdf_ts_idx)
+
 
 def _fragmented_gdf(df, nsplit):
     n = len(df)
