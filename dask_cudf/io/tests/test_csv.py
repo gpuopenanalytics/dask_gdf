@@ -22,7 +22,8 @@ def test_read_csv(tmp_path):
     df3 = dask_cudf.read_csv(f"file://{stmp_path}")
     dd.assert_eq(df2, df3)
 
-    # file does not exist
+
+def test_raises_FileNotFoundError():
     with pytest.raises(FileNotFoundError):
         dask_cudf.read_csv("foo.csv")
 
