@@ -26,7 +26,7 @@ def _internal_read_csv(path, chunksize="256 MiB", **kwargs):
 
     filenames = sorted(glob(str(path)))
     if not filenames:
-        msg = f"A file in: {filenames} does not exist.  Please correct..."
+        msg = f"A file in: {filenames} does not exist."
         raise FileNotFoundError(msg)
 
     name = "read-csv-" + tokenize(
