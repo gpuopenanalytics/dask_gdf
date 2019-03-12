@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c) 2018, NVIDIA CORPORATION.
-######################################
+# Copyright (c) 2019, NVIDIA CORPORATION.
+###########################################
 # dask-cudf CPU conda build script for CI #
-######################################
+###########################################
 set -e
 
 # Logger function for build status output
@@ -59,7 +59,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   cuda-drivers=${DRIVER_VER} libcuda1-${LIBCUDA_VER}
 
 ################################################################################
-# BUILD - Conda package builds (conda deps: libcudf <- libcudf_cffi <- cudf)
+# BUILD - Conda package builds (conda deps: cudf <- dask-cudf)
 ################################################################################
 
 logger "Build conda pkg for dask-cudf..."

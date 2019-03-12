@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c) 2018, NVIDIA CORPORATION.
-#########################################
-# cuDF GPU build and test script for CI #
-#########################################
+# Copyright (c) 2019, NVIDIA CORPORATION.
+##############################################
+# dask-cudf GPU build and test script for CI #
+##############################################
 set -e
 
 # Logger function for build status output

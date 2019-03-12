@@ -1,7 +1,7 @@
 #!/bin/bash
-########################
-# cuDF Version Updater #
-########################
+#############################
+# dask-cudf Version Updater #
+#############################
 
 ## Usage
 # bash update-version.sh <type>
