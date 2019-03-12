@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c) 2018, NVIDIA CORPORATION.
-#####################
-# cuDF Style Tester #
-#####################
+# Copyright (c) 2019, NVIDIA CORPORATION.
+##########################
+# dask-cudf Style Tester #
+##########################
 
 # Ignore errors and set path
 set +e
