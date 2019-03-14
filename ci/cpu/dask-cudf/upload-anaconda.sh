@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Adopted from https://github.com/tmcdonell/travis-scripts/blob/dfaac280ac2082cd6bcaba3217428347899f2975/update-accelerate-buildbot.sh
-export UPLOADFILE=`conda build conda-recipes -c rapidsai -c numba -c conda-forge -c defaults --python $PYTHON --output`
+export UPLOADFILE=`conda build conda-recipes -c nvidia -c rapidsai -c rapidsai-nightly -c numba -c conda-forge -c defaults --python $PYTHON --output`
 
 set -e
 
@@ -26,4 +26,4 @@ echo "LABEL_OPTION=${LABEL_OPTION}"
 
 echo "Upload"
 echo ${UPLOADFILE}
-anaconda -t ${MY_UPLOAD_KEY} upload -u rapidsai ${LABEL_OPTION} --force ${UPLOADFILE}
+anaconda -t ${MY_UPLOAD_KEY} upload -u ${CONDA_USERNAME:-rapidsai} ${LABEL_OPTION} --force ${UPLOADFILE}

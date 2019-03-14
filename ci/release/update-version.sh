@@ -47,12 +47,6 @@ function sed_runner() {
     sed -i.bak ''"$1"'' $2 && rm -f ${2}.bak
 }
 
-# cpp update
-sed_runner 's/'"CUDA_DATAFRAME VERSION ${CURRENT_TAG}"'/'"CUDA_DATAFRAME VERSION ${NEXT_FULL_TAG}"'/g' cpp/CMakeLists.txt
-
-# Conda recipe updates
-sed_runner 's/cudf .*/cudf '"${NEXT_SHORT_TAG}*"'/g' conda/recipes/meta.yaml
-
-# RTD update
-sed_runner 's/version = .*/version = '"'${NEXT_SHORT_TAG}'"'/g' docs/source/conf.py
-sed_runner 's/release = .*/release = '"'${NEXT_FULL_TAG}'"'/g' docs/source/conf.py
+sed_runner 's/ cudf .*/cudf '" ${NEXT_SHORT_TAG}*"'/g' conda/recipes/dask-cudf/meta.yaml
+sed_runner 's/cudf>=.*/cudf>='"${NEXT_SHORT_TAG}"'/g' ci/gpu/build.sh
+sed_runner 's/cudf>=.*/cudf>='"${NEXT_SHORT_TAG}"'/g' requirements.txt
