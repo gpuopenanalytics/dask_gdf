@@ -40,3 +40,9 @@ a few extra methods.
 -  Add pre-commit-config.yaml including black and flake8 `Matthew Rocklin`_
 -  Inherit from Dask Dataframe and respond to cudf update (#48) `Matthew Rocklin`_
 -  updating for new cuDF API `Matthew Jones`_
+
+.. _`Matthew Jones`: https://github.com/mt-jones
+.. _`Keith Kraus`: https://github.com/kkraus14
+.. _`Ray Douglass`: https://github.com/raydouglass
+.. _`Matthew Rocklin`: https://github.com/mrocklin
+.. _`Benjamin Zaitlen`: https://github.com/quasiben
