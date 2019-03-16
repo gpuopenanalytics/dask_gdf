@@ -29,7 +29,6 @@ nvidia-smi
 
 logger "Activate conda env..."
 source activate gdf
-conda list
 
 logger "Check versions..."
 python --version
@@ -39,8 +38,10 @@ $CXX --version
 logger "Setup new environment..."
 conda install -c rapidsai -c rapidsai-nightly -c nvidia -c conda-forge -c defaults \
     cudf>=0.6 \
-    dask>=0.19.0 \
+    dask>=1.1.4 \
     distributed>=1.23.0
+
+conda list
 
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
