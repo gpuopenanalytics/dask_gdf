@@ -29,6 +29,7 @@ nvidia-smi
 
 logger "Activate conda env..."
 source activate gdf
+conda list
 
 logger "Check versions..."
 python --version
