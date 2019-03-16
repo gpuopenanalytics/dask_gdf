@@ -41,8 +41,6 @@ conda install -y -c rapidsai -c rapidsai-nightly -c nvidia -c conda-forge -c def
     dask>=0.19.0 \
     distributed>=1.23.0
 
-conda list
-
 logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
 pip install -e .
