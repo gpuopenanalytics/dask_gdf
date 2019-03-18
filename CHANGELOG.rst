@@ -1,4 +1,4 @@
-2019-03-XX - 0.6.0
+2019-03-18 - 0.6.0
 ------------------
 
 In this release we aligned Dask cuDF to the mainline Dask Dataframe
@@ -46,3 +46,4 @@ a few extra methods.
 .. _`Ray Douglass`: https://github.com/raydouglass
 .. _`Matthew Rocklin`: https://github.com/mrocklin
 .. _`Benjamin Zaitlen`: https://github.com/quasiben
+.. _`Mike Wendt`: https://github.com/mike-wendt
