@@ -174,7 +174,9 @@ class DataFrame(_Frame, dd.core.DataFrame):
             or right_index
             or not dask.is_dask_collection(other)
             or self.npartitions == 1
+            and how in ("inner", "right")
             or other.npartitions == 1
+            and how in ("inner", "left")
         ):
             return dd.merge(
                 self,
