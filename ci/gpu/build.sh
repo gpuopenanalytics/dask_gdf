@@ -41,6 +41,7 @@ conda install -c rapidsai/label/cuda$CUDA_REL -c rapidsai-nightly/label/cuda$CUD
     cudf=0.6* \
     pyarrow=0.12.1 \
     dask>=1.1.5
+pip install git+https://github.com/dask/dask.git --upgrade --no-deps
 
 conda list
 
