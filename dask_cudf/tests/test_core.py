@@ -74,6 +74,23 @@ def test_query():
     assert_frame_equal(got, expect)
 
 
+def test_query_local_dict():
+    np.random.seed(0)
+    df = pd.DataFrame(
+        {"x": np.random.randint(0, 5, size=10), "y": np.random.normal(size=10)}
+    )
+    gdf = cudf.DataFrame.from_pandas(df)
+    ddf = dgd.from_cudf(gdf, npartitions=2)
+
+    val = 2
+
+    gdf_queried = gdf.query("x > @val").to_pandas()
+    ddf_queried = ddf.query("x > @val",
+                            local_dict={'val': val}).compute().to_pandas()
+
+    assert_frame_equal(gdf_queried, ddf_queried)
+
+
 def test_head():
     np.random.seed(0)
     df = pd.DataFrame(
