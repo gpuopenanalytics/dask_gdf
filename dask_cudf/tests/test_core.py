@@ -84,9 +84,9 @@ def test_query_local_dict():
 
     val = 2
 
-    gdf_queried = gdf.query("x > @val")
+    gdf_queried = gdf.query("x > @val").to_pandas()
     ddf_queried = ddf.query("x > @val",
-                            local_dict={'val': val})
+                            local_dict={'val': val}).compute().to_pandas()
 
     assert_frame_equal(gdf_queried, ddf_queried)
 
