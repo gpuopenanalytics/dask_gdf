@@ -84,7 +84,7 @@ def test_query_local_dict():
 
     val = 2
 
-    gdf_queried = gdf.query("x > @val").to_pandas()
+    gdf_queried = gdf.query("x > @val")
     ddf_queried = ddf.query("x > @val",
                             local_dict={'val': val})
 
