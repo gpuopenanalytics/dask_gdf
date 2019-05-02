@@ -362,15 +362,3 @@ def test_concat(gdf, gddf, series):
         .reset_index(drop=True)
     )
     dd.assert_eq(a, b)
-
-
-def test_melt():
-    df = pd.DataFrame({'A': {0: 'a', 1: 'b', 2: 'c'},
-                       'B': {0: 1, 1: 3, 2: 5},
-                       'C': {0: 2, 1: 4, 2: 6}})
-    gdf = cudf.from_pandas(df)
-
-    ddf = dd.from_pandas(gdf, npartitions=2)
-
-    assert_eq(ddf.melt(id_vars=['A'], value_vars=['B']),
-              gdf.melt(id_vars=['A'], value_vars=['B']))
