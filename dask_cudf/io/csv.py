@@ -49,7 +49,7 @@ def _internal_read_csv(path, chunksize="256 MiB", **kwargs):
         return read_csv_without_chunksize(path, **kwargs)
     
     dask_reader = make_reader(cudf.read_csv, "read_csv", "CSV")
-    meta = dask_reader(filenames[0],**kwargs)._meta
+    meta = dask_reader(filenames[0], **kwargs)._meta
 
     dsk = {}
     i = 0
