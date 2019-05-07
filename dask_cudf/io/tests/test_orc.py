@@ -34,19 +34,18 @@ def test_read_orc_cols(engine, columns):
     assert len(df2.columns) == len(columns)
 
 
-# currently failing in cudf:
-# https://github.com/rapidsai/cudf/issues/1594
-# @pytest.mark.parametrize('skip_rows', [0, 5])
-# @pytest.mark.parametrize('num_rows', [10, 20])
-# def test_read_orc_skip_num(skip_rows, num_rows):
-#     df_total = cudf.read_orc(sample_orc)
-#     df1 = cudf.read_orc(sample_orc, skip_rows=skip_rows, num_rows=num_rows)
+@pytest.mark.parametrize('skip_rows', [0, 5])
+@pytest.mark.parametrize('num_rows', [10, 20])
+def test_read_orc_skip_num(skip_rows, num_rows):
+    df_total = cudf.read_orc(sample_orc)
+    df1 = cudf.read_orc(sample_orc, skip_rows=skip_rows, num_rows=num_rows)
 
-#     df2 = dask_cudf.read_orc(sample_orc, skip_rows=skip_rows, num_rows=num_rows)
+    df2 = dask_cudf.read_orc(sample_orc, skip_rows=skip_rows, num_rows=num_rows)
 
-#     dd.assert_eq(df1, df2, check_index=False)
+    dd.assert_eq(df1, df2, check_index=False)
 
-#     # check num_rows
-#     assert len(df2) == num_rows
+    # check num_rows
+    assert len(df2) == num_rows
 
-#     # check skip_rows
+    # check skip_rows
+    dd.assert_eq(df_total.iloc[skip_rows:num_rows + skip_rows], df2, check_index=False)
