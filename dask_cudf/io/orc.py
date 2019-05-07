@@ -8,6 +8,21 @@ import cudf
 
 
 def read_orc(path, **kwargs):
+    """ Read ORC files into a Dask DataFrame
+
+    This calls the ``cudf.read_orc`` function on many ORC files.
+    See that function for additional details.
+
+    Examples
+    --------
+    >>> import dask_cudf
+    >>> df = dask_cudf.read_orc("/path/to/*.orc")  # doctest: +SKIP
+
+    See Also
+    --------
+    cudf.read_orc
+    """
+
     filenames = sorted(glob(str(path)))
     name = "read-orc-" + tokenize(path, **kwargs)
 
@@ -21,6 +36,3 @@ def read_orc(path, **kwargs):
     divisions = [None] * (len(filenames) + 1)
 
     return dd.core.new_dd_object(graph, name, meta, divisions)
-
-
-read_orc.__doc__ = cudf.read_orc.__doc__
