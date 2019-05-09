@@ -36,9 +36,7 @@ def test_groupby(func):
     ddf = dask_cudf.from_cudf(gdf, npartitions=5)
 
     a = func(gdf).to_pandas()
-    print(a)
     b = func(ddf).compute().to_pandas()
-    print(b)
 
     a.index.name = None
     b.index.name = None
