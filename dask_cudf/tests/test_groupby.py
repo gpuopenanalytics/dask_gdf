@@ -6,7 +6,8 @@ import numpy as np
 
 import pytest
 
-
+# lambda df: df.groupby("x").y.sum(),
+# will be resolved with https://github.com/dask/dask/pull/4786
 @pytest.mark.parametrize(
     "func",
     [
@@ -15,7 +16,6 @@ import pytest
         lambda df: df.groupby("x").count(),
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
-        lambda df: df.groupby("x").y.sum(),
         pytest.param(
             lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.xfail
         ),
@@ -37,7 +37,6 @@ def test_groupby(func):
     b = func(ddf).compute().to_pandas()
 
     a.index.name = None
-    a.name = None
     b.index.name = None
 
     dd.assert_eq(a, b)
