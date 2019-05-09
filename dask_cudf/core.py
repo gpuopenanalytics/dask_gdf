@@ -169,10 +169,22 @@ class DataFrame(_Frame, dd.core.DataFrame):
             rsuffix=suffixes[1],
         )
 
-    def join(self, other, how="left", lsuffix="", rsuffix=""):
+    def join(self, other, how="left", lsuffix="", rsuffix="", on=None):
         """Join two datatframes
 
         *on* is not supported.
+        """
+        print("INSIDE JOIN")
+
+        return join_impl.join_frames(
+            left=self,
+            right=other,
+            on=on,
+            how=how,
+            lsuffix=lsuffix,
+            rsuffix=rsuffix,
+        )
+
         """
         if how == "right":
             return other.join(other=self, how="left", lsuffix=rsuffix, rsuffix=lsuffix)
@@ -247,6 +259,7 @@ class DataFrame(_Frame, dd.core.DataFrame):
 
         meta = self._meta.join(other._meta, how=how, lsuffix=lsuffix, rsuffix=rsuffix)
         return from_delayed(joinedparts, meta=meta)
+        """
 
     def _align_divisions(self):
         """Align so that the values do not split across partitions
