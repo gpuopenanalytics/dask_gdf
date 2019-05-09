@@ -6,8 +6,8 @@ import numpy as np
 
 import pytest
 
-# lambda df: df.groupby("x").y.sum(),
-# will be resolved with https://github.com/dask/dask/pull/4786
+
+# y.sum will be resolved with https://github.com/dask/dask/pull/4786
 @pytest.mark.parametrize(
     "func",
     [
@@ -16,6 +16,9 @@ import pytest
         lambda df: df.groupby("x").count(),
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
+        pytest.param(
+            lambda df: df.groupby("x").y.sum(), marks=pytest.mark.xfail
+        ),
         pytest.param(
             lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.xfail
         ),
