@@ -17,13 +17,13 @@ import pytest
         lambda df: df.groupby("x").min(),
         lambda df: df.groupby("x").max(),
         pytest.param(
-            lambda df: df.groupby("x").y.sum(), marks=pytest.mark.xfail
+            lambda df: df.groupby("x").y.sum(), marks=pytest.mark.skip
         ),
         pytest.param(
-            lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.xfail
+            lambda df: df.groupby("x").y.agg(["sum", "max"]), marks=pytest.mark.skip
         ),
         pytest.param(
-            lambda df: df.groupby("x").agg({"y": "max"}), marks=pytest.mark.xfail
+            lambda df: df.groupby("x").agg({"y": "max"}), marks=pytest.mark.skip
         ),
     ],
 )
@@ -31,13 +31,14 @@ def test_groupby(func):
     pdf = pd.DataFrame(
         {"x": np.random.randint(0, 5, size=10000), "y": np.random.normal(size=10000)}
     )
-
     gdf = cudf.DataFrame.from_pandas(pdf)
 
     ddf = dask_cudf.from_cudf(gdf, npartitions=5)
 
     a = func(gdf).to_pandas()
+    print(a)
     b = func(ddf).compute().to_pandas()
+    print(b)
 
     a.index.name = None
     b.index.name = None
