@@ -122,11 +122,11 @@ def test_timeseries_index():
     df['value'] = np.random.sample(len(df))
 
     gdf = cudf.DataFrame.from_pandas(df)
-    ddf = dgd.from_cudf(gdf, npartitions=2)
+    ddf = dgd.from_pandas(gdf, npartitions=2)
 
     ddf_ts_idx = ddf.set_index('date')
 
-    got = ddf_ts_idx.compute().to_pandas()
+    got = ddf_ts_idx
     expect = df.set_index('date')
 
     dd.assert_eq(got, expect, check_index=False, check_divisions=False)
