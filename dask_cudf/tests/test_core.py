@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as tm
 import pytest
-from pandas.util.testing import assert_frame_equal
 
 import cudf
 import dask_cudf as dgd
@@ -21,11 +20,27 @@ def test_from_cudf():
 
     # Test simple around to/from dask
     ingested = dd.from_pandas(gdf, npartitions=2)
-    assert_frame_equal(ingested.compute().to_pandas(), df)
+    dd.assert_eq(ingested, df)
 
     # Test conversion to dask.dataframe
     ddf = ingested.to_dask_dataframe()
-    assert_frame_equal(ddf.compute(), df)
+    dd.assert_eq(ddf, df)
+
+
+def test_from_cudf_with_generic_idx():
+
+    cdf = cudf.DataFrame(
+        [
+            ("a", list(range(20))),
+            ("b", list(reversed(range(20)))),
+            ("c", list(range(20))),
+        ]
+    )
+
+    ddf = dgd.from_cudf(cdf, npartitions=2)
+
+    assert isinstance(ddf.index.compute(), cudf.dataframe.index.GenericIndex)
+    dd.assert_eq(ddf.loc[1:2, ["a"]], cdf.loc[1:2, ["a"]])
 
 
 def _fragmented_gdf(df, nsplit):
@@ -39,86 +54,6 @@ def _fragmented_gdf(df, nsplit):
     return frags
 
 
-@pytest.mark.xfail(reason="don't agree with this functionality")
-def test_concat():
-    np.random.seed(0)
-
-    n = 1000
-    df = pd.DataFrame(
-        {"x": np.random.randint(0, 5, size=n), "y": np.random.normal(size=n)}
-    )
-
-    gdf = cudf.DataFrame.from_pandas(df)
-    frags = _fragmented_gdf(gdf, nsplit=13)
-
-    # Combine with concat
-    concated = dgd.concat(frags)
-    assert_frame_equal(df, concated)
-
-
-@pytest.mark.xfail(reason="don't agree with this functionality")
-def test_append():
-    np.random.seed(0)
-
-    n = 1000
-    df = pd.DataFrame(
-        {"x": np.random.randint(0, 5, size=n), "y": np.random.normal(size=n)}
-    )
-
-    gdf = cudf.DataFrame.from_pandas(df)
-    frags = _fragmented_gdf(gdf, nsplit=13)
-
-    # Combine with .append
-    head = frags[0]
-    tail = frags[1:]
-
-    appended = dd.from_pandas(head, npartitions=1)
-    for each in tail:
-        appended = appended.append(each)
-
-    dd.assert_eq(df, appended)
-
-
-def test_series_concat():
-    np.random.seed(0)
-
-    n = 1000
-    df = pd.DataFrame(
-        {"x": np.random.randint(0, 5, size=n), "y": np.random.normal(size=n)}
-    )
-
-    gdf = cudf.DataFrame.from_pandas(df)
-    frags = _fragmented_gdf(gdf, nsplit=13)
-
-    frags = [df.x for df in frags]
-
-    concated = dgd.concat(frags).compute().to_pandas()
-    assert isinstance(concated, pd.Series)
-    np.testing.assert_array_equal(concated, df.x)
-
-
-def test_series_append():
-    np.random.seed(0)
-
-    n = 1000
-    df = pd.DataFrame(
-        {"x": np.random.randint(0, 5, size=n), "y": np.random.normal(size=n)}
-    )
-
-    gdf = cudf.DataFrame.from_pandas(df)
-    frags = _fragmented_gdf(gdf, nsplit=13)
-
-    frags = [df.x for df in frags]
-
-    appending = dd.from_pandas(frags[0], npartitions=1)
-    for frag in frags[1:]:
-        appending = appending.append(frag)
-
-    appended = appending.compute().to_pandas()
-    assert isinstance(appended, pd.Series)
-    np.testing.assert_array_equal(appended, df.x)
-
-
 def test_query():
     np.random.seed(0)
 
@@ -128,14 +63,30 @@ def test_query():
     gdf = cudf.DataFrame.from_pandas(df)
     expr = "x > 2"
 
-    assert_frame_equal(gdf.query(expr).to_pandas(), df.query(expr))
+    dd.assert_eq(gdf.query(expr), df.query(expr))
 
     queried = dd.from_pandas(gdf, npartitions=2).query(expr)
 
-    got = queried.compute().to_pandas()
-    expect = gdf.query(expr).to_pandas()
+    got = queried
+    expect = gdf.query(expr)
 
-    assert_frame_equal(got, expect)
+    dd.assert_eq(got, expect)
+
+
+def test_query_local_dict():
+    np.random.seed(0)
+    df = pd.DataFrame(
+        {"x": np.random.randint(0, 5, size=10), "y": np.random.normal(size=10)}
+    )
+    gdf = cudf.DataFrame.from_pandas(df)
+    ddf = dgd.from_cudf(gdf, npartitions=2)
+
+    val = 2
+
+    gdf_queried = gdf.query("x > @val")
+    ddf_queried = ddf.query("x > @val", local_dict={"val": val})
+
+    dd.assert_eq(gdf_queried, ddf_queried)
 
 
 def test_head():
@@ -146,7 +97,7 @@ def test_head():
     gdf = cudf.DataFrame.from_pandas(df)
     dgf = dd.from_pandas(gdf, npartitions=2)
 
-    assert_frame_equal(dgf.head().to_pandas(), df.head())
+    dd.assert_eq(dgf.head(), df.head())
 
 
 def test_from_dask_dataframe():
@@ -245,8 +196,8 @@ def test_assign():
     newcol = dd.from_pandas(cudf.Series(pdcol), npartitions=dgf.npartitions)
     out = dgf.assign(z=newcol)
 
-    got = out.compute().to_pandas()
-    assert_frame_equal(got.loc[:, ["x", "y"]], df)
+    got = out
+    dd.assert_eq(got.loc[:, ["x", "y"]], df)
     np.testing.assert_array_equal(got["z"], pdcol)
 
 
@@ -319,3 +270,109 @@ def test_repr(func):
     assert repr(gddf)
     if hasattr(pdf, "_repr_html_"):
         assert gddf._repr_html_()
+
+
+@pytest.mark.skip(reason="datetime indexes not fully supported in cudf")
+@pytest.mark.parametrize("start", ["1d", "5d", "1w", "12h"])
+@pytest.mark.parametrize("stop", ["1d", "3d", "8h"])
+def test_repartition_timeseries(start, stop):
+    # This test is currently absurdly slow.  It should not be unskipped without
+    # slimming it down.
+    pdf = dask.datasets.timeseries(
+        "2000-01-01",
+        "2000-01-31",
+        freq="1s",
+        partition_freq=start,
+        dtypes={"x": int, "y": float},
+    )
+    gdf = pdf.map_partitions(cudf.DataFrame.from_pandas)
+
+    a = pdf.repartition(freq=stop)
+    b = gdf.repartition(freq=stop)
+    assert a.divisions == b.divisions
+
+    dd.utils.assert_eq(a, b)
+
+
+@pytest.mark.parametrize("start", [1, 2, 5])
+@pytest.mark.parametrize("stop", [1, 3, 7])
+def test_repartition_simple_divisions(start, stop):
+    pdf = pd.DataFrame({"x": range(100)})
+
+    pdf = dd.from_pandas(pdf, npartitions=start)
+    gdf = pdf.map_partitions(cudf.DataFrame.from_pandas)
+
+    a = pdf.repartition(npartitions=stop)
+    b = gdf.repartition(npartitions=stop)
+    assert a.divisions == b.divisions
+
+    dd.utils.assert_eq(a, b)
+
+
+@pytest.fixture
+def pdf():
+    return pd.DataFrame(
+        {"x": [1, 2, 3, 4, 5, 6], "y": [11.0, 12.0, 13.0, 14.0, 15.0, 16.0]}
+    )
+
+
+@pytest.fixture
+def gdf(pdf):
+    return cudf.from_pandas(pdf)
+
+
+@pytest.fixture
+def ddf(pdf):
+    return dd.from_pandas(pdf, npartitions=3)
+
+
+@pytest.fixture
+def gddf(gdf):
+    return dd.from_pandas(gdf, npartitions=3)
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        lambda df: df + 1,
+        lambda df: df.index,
+        lambda df: df.x.sum(),
+        lambda df: df.x.astype(float),
+        lambda df: df.assign(z=df.x.astype("int")),
+    ],
+)
+def test_unary_ops(func, gdf, gddf):
+    p = func(gdf)
+    g = func(gddf)
+
+    # Fixed in https://github.com/dask/dask/pull/4657
+    if isinstance(p, cudf.Index):
+        from packaging import version
+        if version.parse(dask.__version__) < version.parse("1.1.6"):
+            pytest.skip("dask.dataframe assert_eq index check hardcoded to "
+                        "pandas prior to 1.1.6 release")
+
+    dd.assert_eq(p, g, check_names=False)
+
+
+@pytest.mark.parametrize("series", [True, False])
+def test_concat(gdf, gddf, series):
+    if series:
+        gdf = gdf.x
+        gddf = gddf.x
+    a = cudf.concat([gdf, gdf + 1, gdf + 2]).sort_values("x").reset_index(drop=True)
+    b = (
+        dd.concat([gddf, gddf + 1, gddf + 2], interleave_partitions=True)
+        .compute()
+        .sort_values("x")
+        .reset_index(drop=True)
+    )
+    dd.assert_eq(a, b)
+
+
+def test_boolean_index(gdf, gddf):
+
+    gdf2 = gdf[gdf.x > 2]
+    gddf2 = gddf[gddf.x > 2]
+
+    dd.assert_eq(gdf2, gddf2)
