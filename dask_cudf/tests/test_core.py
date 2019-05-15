@@ -122,7 +122,7 @@ def test_timeseries_index():
     df['value'] = np.random.sample(len(df))
 
     gdf = cudf.DataFrame.from_pandas(df)
-    ddf = dgd.from_pandas(gdf, npartitions=2)
+    ddf = dd.from_pandas(gdf, npartitions=2)
 
     ddf_ts_idx = ddf.set_index('date')
 
