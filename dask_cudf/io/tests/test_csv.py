@@ -1,3 +1,5 @@
+import warnings
+
 import dask
 import dask_cudf
 import dask.dataframe as dd
@@ -21,6 +23,11 @@ def test_read_csv(tmp_path):
     stmp_path = str(tmp_path / "data-*.csv")
     df3 = dask_cudf.read_csv(f"file://{stmp_path}")
     dd.assert_eq(df2, df3)
+
+
+def test_raises_FileNotFoundError():
+    with pytest.raises(FileNotFoundError):
+        dask_cudf.read_csv("foo.csv")
 
 
 def test_read_csv_w_bytes(tmp_path):
@@ -50,3 +57,10 @@ def test_read_csv_compression(tmp_path):
 
     assert df2.npartitions is 1
     dd.assert_eq(df2, df, check_index=False)
+
+    with warnings.catch_warnings(record=True) as record:
+        df2 = dask_cudf.read_csv(
+            tmp_path / "*.csv.gz", chunksize=None, compression="gzip"
+        )
+
+        assert not record
