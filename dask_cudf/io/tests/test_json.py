@@ -14,6 +14,7 @@ def test_read_json(tmp_path):
     df2 = dask_cudf.read_json(tmp_path / "data-*.json")
     dd.assert_eq(df, df2)
 
+
 @pytest.mark.filterwarnings("ignore:Using CPU")
 @pytest.mark.parametrize('orient', ['split', 'records', 'index', 'columns',
                                     'values'])
