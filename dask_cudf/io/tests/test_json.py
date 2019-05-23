@@ -19,29 +19,19 @@ def test_read_json(tmp_path):
 @pytest.mark.parametrize('orient', ['split', 'index', 'columns', 'values'])
 def test_read_json_basic(orient):
     df = pd.DataFrame({'x': ['a', 'b', 'c', 'd'], 'y': [1, 2, 3, 4]})
-    ddf = dd.from_pandas(df, npartitions=2)
     with tmpfile('json') as f:
         df.to_json(f, orient=orient, lines=False)
         actual = dask_cudf.read_json(f, orient=orient, lines=False)
         actual_pd = pd.read_json(f, orient=orient, lines=False)
-
-        out = actual.compute()
-        dd.assert_eq(out, actual_pd)
-        if orient == 'values':
-            out.columns = list(df.columns)
-        dd.assert_eq(out, df)
+        dd.assert_eq(actual, actual_pd)
 
 
 @pytest.mark.filterwarnings("ignore:Using CPU")
 @pytest.mark.parametrize('lines', [True, False])
 def test_read_json_lines(lines):
     df = pd.DataFrame({'x': ['a', 'b', 'c', 'd'], 'y': [1, 2, 3, 4]})
-    ddf = dd.from_pandas(df, npartitions=2)
     with tmpfile('json') as f:
         df.to_json(f, orient='records', lines=lines)
         actual = dask_cudf.read_json(f, orient='records', lines=lines)
         actual_pd = pd.read_json(f, orient='records', lines=lines)
-
-        out = actual.compute()
-        dd.assert_eq(out, actual_pd)
-        dd.assert_eq(out, df)
+        dd.assert_eq(actual, actual_pd)
