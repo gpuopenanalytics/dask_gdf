@@ -18,6 +18,10 @@ export CUDA_REL=${CUDA_VERSION%.*}
 # Set home to the job's workspace
 export HOME=$WORKSPACE
 
+# Parse git describe
+export GIT_DESCRIBE_TAG=`git describe`
+export MINOR_VERSION=`echo $GIT_DESCRIBE_TAG | grep -o -E '([0-9]\.[0-9])'`
+
 ################################################################################
 # SETUP - Check environment
 ################################################################################
@@ -37,10 +41,7 @@ $CC --version
 $CXX --version
 
 logger "Setup new environment..."
-conda install -c rapidsai/label/cuda$CUDA_REL -c rapidsai-nightly/label/cuda$CUDA_REL -c nvidia/label/cuda$CUDA_REL -c conda-forge \
-    'cudf=0.7*' \
-    'pyarrow=0.12.1' \
-    'dask>=1.1.5'
+conda install "cudf=$MINOR_VERSION.*" "dask>=1.1.5"
 pip install git+https://github.com/dask/dask.git --upgrade --no-deps
 
 conda list
