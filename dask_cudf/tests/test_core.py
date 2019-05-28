@@ -272,10 +272,12 @@ def test_repr(func):
         assert gddf._repr_html_()
 
 
-@pytest.mark.xfail(reason="datetime indexes not fully supported in cudf")
+@pytest.mark.skip(reason="datetime indexes not fully supported in cudf")
 @pytest.mark.parametrize("start", ["1d", "5d", "1w", "12h"])
 @pytest.mark.parametrize("stop", ["1d", "3d", "8h"])
 def test_repartition_timeseries(start, stop):
+    # This test is currently absurdly slow.  It should not be unskipped without
+    # slimming it down.
     pdf = dask.datasets.timeseries(
         "2000-01-01",
         "2000-01-31",
@@ -342,6 +344,14 @@ def gddf(gdf):
 def test_unary_ops(func, gdf, gddf):
     p = func(gdf)
     g = func(gddf)
+
+    # Fixed in https://github.com/dask/dask/pull/4657
+    if isinstance(p, cudf.Index):
+        from packaging import version
+        if version.parse(dask.__version__) < version.parse("1.1.6"):
+            pytest.skip("dask.dataframe assert_eq index check hardcoded to "
+                        "pandas prior to 1.1.6 release")
+
     dd.assert_eq(p, g, check_names=False)
 
 
@@ -358,3 +368,11 @@ def test_concat(gdf, gddf, series):
         .reset_index(drop=True)
     )
     dd.assert_eq(a, b)
+
+
+def test_boolean_index(gdf, gddf):
+
+    gdf2 = gdf[gdf.x > 2]
+    gddf2 = gddf[gddf.x > 2]
+
+    dd.assert_eq(gdf2, gddf2)
