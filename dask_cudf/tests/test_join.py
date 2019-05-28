@@ -71,6 +71,9 @@ def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
 @pytest.mark.parametrize("right_nkeys", [4, 5])
 @pytest.mark.parametrize("how", ["left", "right"])
 def test_join_left(left_nrows, right_nrows, left_nkeys, right_nkeys, how):
+    if how == "right":
+        pytest.xfail("Right joins are not yet supported")
+
     chunksize = 50
 
     np.random.seed(0)
