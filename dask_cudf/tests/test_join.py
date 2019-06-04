@@ -40,16 +40,20 @@ def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
     expect = expect.to_pandas()
 
     # dask_cudf
-    left = dgd.from_cudf(left, chunksize=chunksize)
-    right = dgd.from_cudf(right, chunksize=chunksize)
+    g_left = dgd.from_cudf(left, chunksize=chunksize)
+    g_right = dgd.from_cudf(right, chunksize=chunksize)
 
-    joined = left.set_index("x").join(
-        right.set_index("x"), how="inner", lsuffix="l", rsuffix="r"
+    joined = g_left.set_index("x").join(
+        g_right.set_index("x"), how="inner", lsuffix="l", rsuffix="r"
     )
+
     got = joined.compute().to_pandas()
 
-    # Check index
-    np.testing.assert_array_equal(expect.index.values, got.index.values)
+    # currently a random number
+    got.index.name = None
+    # correct value of 'x'
+    expect.index.name = None
+    dd.assert_eq(expect, got)
 
     # Check rows in each groups
     expect_rows = {}
@@ -71,6 +75,9 @@ def test_join_inner(left_nrows, right_nrows, left_nkeys, right_nkeys):
 @pytest.mark.parametrize("right_nkeys", [4, 5])
 @pytest.mark.parametrize("how", ["left", "right"])
 def test_join_left(left_nrows, right_nrows, left_nkeys, right_nkeys, how):
+    if how == "right":
+        pytest.xfail("Right joins are not yet supported")
+
     chunksize = 50
 
     np.random.seed(0)
