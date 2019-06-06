@@ -19,7 +19,6 @@ from cudf import MultiIndex
 
 from pandas.api.types import (
     is_categorical_dtype,
-    is_period_dtype,
     is_datetime64tz_dtype,
 )
 
@@ -75,10 +74,6 @@ def _nonempty_series(s, idx=None):
         data = pd.Categorical(data, categories=cats, ordered=s.cat.ordered)
     elif is_integer_na_dtype(dtype):
         data = pd.array([1, None], dtype=dtype)
-    elif is_period_dtype(dtype):
-        # pandas 0.24.0+ should infer this to be Series[Period[freq]]
-        freq = dtype.freq
-        data = [pd.Period("2000", freq), pd.Period("2001", freq)]
     else:
         entry = _scalar_from_dtype(dtype)
         data = np.array([entry, entry], dtype=dtype)
@@ -105,6 +100,9 @@ def _nonempty_index(idx):
         return type(data, name=idx.name)
     elif typ is DatetimeIndex:
         start = "1970-01-01"
+        freq = None  # cudf does not support frequency
+        tz = None  # cudf does not support a timezone
+
         # Need a non-monotonic decreasing index to avoid issues with
         # partial string indexing see https://github.com/dask/dask/issues/2389
         # and https://github.com/pandas-dev/pandas/issues/16515
@@ -112,14 +110,14 @@ def _nonempty_index(idx):
         # `self.monotonic_increasing` or `self.monotonic_decreasing`
         try:
             dates = pd.date_range(
-                start=start, periods=2, freq=idx.freq, tz=idx.tz, name=idx.name
+                start=start, periods=2, freq=freq, tz=tz, name=idx.name
             )
         except ValueError:  # older pandas versions
-            data = [start, "1970-01-02"] if idx.freq is None else None
+            data = None
             dates = pd.DatetimeIndex(
-                data, start=start, periods=2, freq=idx.freq, tz=idx.tz, name=idx.name
+                data, start=start, periods=2, freq=freq, tz=tz, name=idx.name
             )
-        return type(dates, name=idx.name)
+        return typ(dates, name=idx.name)
     elif typ is MultiIndex:
         levels = [_nonempty_index(l) for l in idx.levels]
         codes = [[0, 0] for i in idx.levels]
