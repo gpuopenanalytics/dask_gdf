@@ -49,5 +49,5 @@ logger "Python py.test for dask-cudf..."
 cd $WORKSPACE
 pip install -e .
 
-py.test --cache-clear --junitxml=${WORKSPACE}/junit-dask-cudf.xml -v --cov-config=.coveragerc --cov=dask-cudf --cov-report=xml:${WORKSPACE}/dask-cudf-coverage.xml --cov-report term
+py.test --cache-clear --junitxml=${WORKSPACE}/junit-dask-cudf.xml -v --cov-config=.coveragerc --cov=dask_cudf --cov-report=xml:${WORKSPACE}/dask-cudf-coverage.xml --cov-report term
 
