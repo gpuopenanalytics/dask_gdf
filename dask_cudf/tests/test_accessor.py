@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 from pandas.util.testing import assert_series_equal
 
+import dask.dataframe as dd
 import dask_cudf as dgd
+import cudf
 from cudf.dataframe import Series
 
 #############################################################################
@@ -176,3 +178,21 @@ def test_categorical_compare_ordered(data):
     # Test ordered operators
     np.testing.assert_array_equal(pdsr1 < pdsr2, (dsr1 < dsr2).compute())
     np.testing.assert_array_equal(pdsr1 > pdsr2, (dsr1 > dsr2).compute())
+
+
+################
+# Str accessor #
+################
+
+
+@pytest.mark.parametrize(
+    "func", [lambda s: s.str.contains("a"), lambda s: s.str.lower()]
+)
+def test_str(func):
+    s = pd.Series(["Foo", "foo", "abc", "ABC"])
+    c = cudf.from_pandas(s)
+
+    ds = dd.from_pandas(s, npartitions=2)
+    dc = dd.from_pandas(c, npartitions=2)
+
+    dd.assert_eq(func(ds), func(dc))
