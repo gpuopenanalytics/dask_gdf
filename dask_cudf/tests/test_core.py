@@ -130,6 +130,23 @@ def test_set_index(nelem):
         dd.assert_eq(expect, got, check_index=False, check_divisions=False)
 
 
+def test_timeseries_index():
+
+    df = pd.DataFrame()
+    df['date'] = pd.date_range('11/20/2018', periods=72, freq='D')
+    df['value'] = np.random.sample(len(df))
+
+    gdf = cudf.DataFrame.from_pandas(df)
+    ddf = dd.from_pandas(gdf, npartitions=2)
+
+    ddf_ts_idx = ddf.set_index('date')
+
+    got = ddf_ts_idx
+    expect = df.set_index('date')
+
+    dd.assert_eq(got, expect, check_index=False, check_divisions=False)
+
+
 def assert_frame_equal_by_index_group(expect, got):
     assert sorted(expect.columns) == sorted(got.columns)
     assert sorted(set(got.index)) == sorted(set(expect.index))
